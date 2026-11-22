@@ -82,3 +82,7 @@ The deploy steps are placeholders until a host is chosen. Set up the `dev` and `
 - [Analysis](docs/analysis.md): current state, gaps, risks
 - [Features](docs/features.md): what the backend does and its rules
 - [Decisions](docs/decisions/): architecture decision records
+
+## Contributing
+
+Keep changes small and focused, and update the docs when behavior changes.
