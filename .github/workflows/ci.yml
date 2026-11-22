@@ -1,0 +1,99 @@
+name: ci-cd
+
+on:
+  push:
+    branches: [master]
+    tags: ['v*']
+  pull_request:
+    branches: [master]
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  # Runs on PRs and on master. Single source of truth for "is this green?"
+  verify:
+    if: "!startsWith(github.ref, 'refs/tags/')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - run: ./mvnw -B -ntp verify
+
+  # Build and publish the image once, tagged by commit SHA.
+  build-image:
+    needs: verify
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-dev:
+    needs: build-image
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Deploy SHA to dev
+        run: |
+          echo "Deploying ${{ env.IMAGE }}:${{ github.sha }} to dev"
+          # Replace with your host's deploy hook, e.g.:
+          # curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+
+  # Prod runs only from a tag, and only by promoting an image that already
+  # passed on master. Nothing is rebuilt, so prod runs the tested bytes.
+  promote-prod:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Refuse to release a commit that is not on master
+        run: |
+          git fetch origin master --depth=0 2>/dev/null || git fetch origin master
+          if ! git merge-base --is-ancestor "${{ github.sha }}" origin/master; then
+            echo "::error::Tag ${{ github.ref_name }} points at a commit that is not on master."
+            exit 1
+          fi
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Retag the tested image as the release version
+        run: |
+          docker buildx imagetools create \
+            --tag ${{ env.IMAGE }}:${{ github.ref_name }} \
+            --tag ${{ env.IMAGE }}:latest \
+            ${{ env.IMAGE }}:${{ github.sha }}
+
+      - name: Deploy release to prod
+        run: |
+          echo "Deploying ${{ env.IMAGE }}:${{ github.ref_name }} to prod"
+          # Replace with your prod deploy hook.
