@@ -19,5 +19,5 @@ The team wants every push to `master` to reach dev automatically and production 
 
 - Production runs the exact bytes that passed in dev.
 - A release needs a tag on a commit that already built on `master`.
-- The deploy steps are placeholders until we choose a host.
+- The deploy steps were placeholders until a host was chosen; see [0008](0008-host-provider.md).
 - GitHub settings (environments, branch protection) must be configured by hand. The workflow file cannot set them.
