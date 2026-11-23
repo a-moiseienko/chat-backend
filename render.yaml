@@ -7,4 +7,4 @@ services:
     healthCheckPath: /actuator/health
     envVars:
       - key: CHAT_ALLOWED_ORIGINS
-        sync: false
+        value: https://chat-widget-2r2b.onrender.com
