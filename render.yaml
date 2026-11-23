@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: chat-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: CHAT_ALLOWED_ORIGINS
+        sync: false
