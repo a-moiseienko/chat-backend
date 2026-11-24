@@ -1,6 +1,6 @@
 # 0010. Postgres with pgvector, schema owned by a separate Flyway project
 
-Status: Accepted (2026-11-24).
+Status: Superseded by [0011](0011-merge-migrations-into-backend.md) (2026-11-24).
 
 ## Context
 

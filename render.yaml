@@ -36,7 +36,5 @@ services:
           name: chat-db
           property: password
 
-# Schema (including `CREATE EXTENSION vector`) is applied by the db-migrations project, not here.
-# Point its Flyway run at this database's external connection string (Render dashboard > chat-db
-# > "External Connection String") before chat-backend's first deploy, the same way the Flyway
-# service runs against postgres in docker-compose.yml.
+# Schema (including `CREATE EXTENSION vector`) is applied by chat-backend itself on startup via
+# Spring Boot's embedded Flyway (src/main/resources/db/migration) against this same database.
