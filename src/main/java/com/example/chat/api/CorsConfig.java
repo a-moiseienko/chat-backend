@@ -1,5 +1,6 @@
 package com.example.chat.api;
 
+import com.example.chat.session.SessionIdHeader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -20,7 +21,7 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 .allowedOrigins(allowedOrigins)
                 .allowedMethods("POST")
-                .allowedHeaders("Content-Type")
+                .allowedHeaders("Content-Type", SessionIdHeader.NAME)
                 .maxAge(3600);
     }
 }

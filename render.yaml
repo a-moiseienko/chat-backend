@@ -1,3 +1,10 @@
+databases:
+  - name: chat-db
+    databaseName: chat
+    user: chat
+    plan: free
+    postgresMajorVersion: "16"
+
 services:
   - type: web
     name: chat-backend
@@ -8,3 +15,28 @@ services:
     envVars:
       - key: CHAT_ALLOWED_ORIGINS
         value: https://chat-widget-2r2b.onrender.com
+      - key: PGHOST
+        fromDatabase:
+          name: chat-db
+          property: host
+      - key: PGPORT
+        fromDatabase:
+          name: chat-db
+          property: port
+      - key: PGDATABASE
+        fromDatabase:
+          name: chat-db
+          property: database
+      - key: PGUSER
+        fromDatabase:
+          name: chat-db
+          property: user
+      - key: PGPASSWORD
+        fromDatabase:
+          name: chat-db
+          property: password
+
+# Schema (including `CREATE EXTENSION vector`) is applied by the db-migrations project, not here.
+# Point its Flyway run at this database's external connection string (Render dashboard > chat-db
+# > "External Connection String") before chat-backend's first deploy, the same way the Flyway
+# service runs against postgres in docker-compose.yml.

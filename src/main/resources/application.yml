@@ -7,6 +7,12 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  datasource:
+    # PG* vars (rather than one SPRING_DATASOURCE_URL) so the host, port, database, user and
+    # password can each come from a provider's own database reference (see render.yaml).
+    url: jdbc:postgresql://${PGHOST:localhost}:${PGPORT:5432}/${PGDATABASE:chat}
+    username: ${PGUSER:chat}
+    password: ${PGPASSWORD:chat}
 
 server:
   port: 8080
@@ -14,6 +20,12 @@ server:
 chat:
   # Origins that may call /api from a browser (comma separated).
   allowed-origins: http://localhost:5173,http://127.0.0.1:5173
+  session:
+    # How long a session id is remembered after its last request.
+    inactivity-timeout: 30m
+    rate-limit:
+      max-requests: 30
+      window: 1m
 
 management:
   endpoints:
